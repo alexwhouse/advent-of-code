@@ -3,15 +3,15 @@ import regex
 
 class CalibrationParser:
 
-    word_numbers = {"one": 1,
-                    "two": 2,
-                    "three": 3,
-                    "four": 4,
-                    "five": 5,
-                    "six": 6,
-                    "seven": 7,
-                    "eight": 8,
-                    "nine": 9}
+    word_numbers = {"one": "1",
+                    "two": "2",
+                    "three": "3",
+                    "four": "4",
+                    "five": "5",
+                    "six": "6",
+                    "seven": "7",
+                    "eight": "8",
+                    "nine": "9"}
     
 
     p = regex.compile(r"\L<name>", name=word_numbers.keys())
@@ -19,12 +19,14 @@ class CalibrationParser:
     def sumCalibrations(self, fileName: str) -> int:
         with open(fileName, "r") as f:
             sum = 0
+            line_number = 1
             for line in f:
-                sum += self.parseCalibrationLine(line)
+                sum += self.parseCalibrationLine(line, line_number)
+                line_number += 1
             
             return sum
     
-    def parseCalibrationLine(self, line: str) -> int:
+    def parseCalibrationLine(self, line: str, line_number: int=None) -> int:
         # returns the number parsed from the calibration string of the first and last digit.
         first = ""
         last = ""
@@ -32,17 +34,20 @@ class CalibrationParser:
         substr = ""
         for c in line:
             if not c.isnumeric():
+                # print("not numeric " + c)
                 substr += c
-                continue
-            if not first:
-                # TODO check substr if it is numeric first
+            elif not first:
+                # print("not first " + c)
                 numbers = self.getNumericValue(substr)
                 if numbers:
                     first = numbers[0]
+                    last = c
                 else:
                     first = c
+                    last = c
                 substr = ""
             else:
+                # print("not last " + c)
                 last = c
                 substr = ""
         
@@ -52,9 +57,6 @@ class CalibrationParser:
                 first = numbers[0]
             last = numbers[-1]
 
-        if not last:
-            last = first
-
         if not first:
             print("No value found for " + line)
             return 0
@@ -62,19 +64,19 @@ class CalibrationParser:
     
     def getNumericValue(self, s: str) -> list[int]:
         # Returns all numeric values contained in string s in the order they appeared
-        return [str(self.word_numbers[x]) for x in self.p.findall(s)]
+        return [self.word_numbers[x] for x in self.p.findall(s)]
 
 
-    
 def main():
     myParser = CalibrationParser()
     file_name = "dec01_input.txt"
     # file_name = "testdata2.txt"
+    # file_name = "testdata_head5-375.txt"
     script_dir = Path(__file__).resolve().parent
     file_path = script_dir / file_name
 
     print(myParser.sumCalibrations(file_path))
-    # print(myParser.parseCalibrationLine("eightwothree"))
+    # print(myParser.parseCalibrationLine("sgeightwo3"))
 
     # print(myParser.getNumericValue("eighttwothree"))
 
